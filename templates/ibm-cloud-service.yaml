@@ -11,17 +11,25 @@ spec:
   plan: {{ required "A valid service plan is required." .Values.service.plan }}
   serviceClass: {{ .Values.service.serviceClass }}
   context:
-    region: {{ .Values.context.region }}
-    resourcegroup: {{ .Values.context.resourceGroup }}
+    region: {{ .Values.service.context.region }}
+    resourcegroup: {{ .Values.service.context.resourceGroup }}
   externalName:  {{ .Values.service.externalName }}
-  {{- printf "%s.%s"  .Chart.Name .Values.service.serviceClass }}
-  {{- include (printf "%s.%s"  .Chart.Name .Values.service.serviceClass) .}}
+{{ if .Values.parameters }}
+  parameters:
+    {{- range $key, $val := .Values.service.parameters }}
+    {{ $key }}: {{ $val }}
+    {{- end }}
+{{ end }}
 ---
 apiVersion: ibmcloud.ibm.com/v1alpha1
 kind: Binding
 metadata:
   name: binding-{{ .Values.service.name }}
   namespace: {{ .Values.service.namespace }}
+{{ if eq .Values.binding.alias true }}
+  annotations:
+    ibmcloud.ibm.com/keyId: {{ required "A valid keyId is required when binding.alias is set to true" .Values.binding.keyId | quote }}
+{{ end }}
 spec:
   serviceName: {{ .Values.service.name }}
   role: Manager
