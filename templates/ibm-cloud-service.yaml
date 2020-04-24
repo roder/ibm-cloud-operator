@@ -1,0 +1,28 @@
+apiVersion: ibmcloud.ibm.com/v1alpha1
+kind: Service
+metadata:
+  name: {{ .Values.service.name }}
+  namespace: {{ required "a valid namespace is required!" .Values.service.namespace }}
+{{ if eq .Values.service.plan "Alias" }}
+  annotations:
+    ibmcloud.ibm.com/instanceId: {{ required "A valid instanceId is required when service.plan is set to Alias" .Values.service.instanceId | quote }}
+{{ end }}
+spec:
+  plan: {{ required "A valid service plan is required." .Values.service.plan }}
+  serviceClass: {{ .Values.service.serviceClass }}
+  context:
+    region: {{ .Values.context.region }}
+    resourcegroup: {{ .Values.context.resourceGroup }}
+  externalName:  {{ .Values.service.externalName }}
+  {{- printf "%s.%s"  .Chart.Name .Values.service.serviceClass }}
+  {{- include (printf "%s.%s"  .Chart.Name .Values.service.serviceClass) .}}
+---
+apiVersion: ibmcloud.ibm.com/v1alpha1
+kind: Binding
+metadata:
+  name: binding-{{ .Values.service.name }}
+  namespace: {{ .Values.service.namespace }}
+spec:
+  serviceName: {{ .Values.service.name }}
+  role: Manager
+  serviceNamespace: {{ .Values.service.namespace }}

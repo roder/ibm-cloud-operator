@@ -1,0 +1,65 @@
+# Default values for ibm-cloud-operator.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+
+####
+#
+# Service YAML elements are documented here:
+# https://github.com/IBM/cloud-operators#service-yaml-elements
+#
+####
+service:
+  name: "redis-helm-test-1"
+  serviceClass: "cloudantnosqldb"
+  # the plan to use for the service.  For creating a service that maps to an existing service use "Alias" and also specify an instanceId.
+  plan: standard
+  # Provide an instanceId if you want to define a service that maps to an existing service instead of creating a new one.
+  # Note: The instanceId is only applied to the template if the plan is set to Alias.  Otherwise it is omitted, even it specified here.
+  instanceId: "crn:v1:bluemix:public:language-translator:us-south:a/0b5a00334eaf9eb9339d2ab48f20d7f5:e641000a-9108-45fb-b2e6-ab7e52acc962::"
+  namespace: "dave-app"
+  externalName: "redis-helm-test-1-eng"
+
+context:
+  region: "us-south"
+  resourceGroup: "helm-test"
+
+
+####
+#
+# They are optional and are documented here:
+# https://cloud.ibm.com/docs/Cloudant?topic=cloudant-creating-and-leveraging-an-ibm-cloudant-dedicated-hardware-plan-instance-on-ibm-cloud#provisioning-a-standard-plan-instance-on-a-dedicated-hardware-environment-with-the-ibm-cloud-cli
+#
+####
+
+cloudant:
+  parameters:
+    legacyCredentials: false
+    # Note: environment_crn is only required if you are provisioning a Cloudant instance associated with a Dedicated Hardware plan
+    environment_crn: "<Your Cloudant Enterprise CRN goes here>"
+
+
+####
+#
+# Parameters are for Databases for Redis.  These values are used if service.serviceClass is set to "databases-for-redis".
+#
+# They are optional and are documented here: 
+# https://cloud.ibm.com/docs/databases-for-redis?topic=cloud-databases-provisioning#list-of-additional-parameters
+#
+####
+redis:
+  parameters:
+    # default version is 5 
+    version: 5
+    # the CRN of a Key Protect Key to be used
+    key_protect_key: "<Your Key Protect Key CRN goes here!>"
+    # Total amount of memory to be shared between the database members within the database. Default is 2048 (1GB/member)
+    members_memory_allocation_mb: 6144
+    # Total amount of disk to be shared between the database members within the database.  Default is 2048 (1GB/member)
+    members_disk_allocation_mb: 2048
+    #  Enables and allocates the number of specified dedicated cores to your deployment.  If omitted, the default value "Shared CPU" is used.
+    member_cpu_allocation_count: 2
+    # Allowed values are "public", "private" and "public-and-private".  
+    service_endpoints: private
+
+
