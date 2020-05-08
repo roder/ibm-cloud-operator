@@ -1,36 +1,51 @@
+{{- range .Values.services}}
+---
+  {{- $name := (required "name is required." .name) }}
+{{- if not .bindingAlias }}
+  {{- $serviceClass := (required "serviceClass is required." .serviceClass) }}
+  {{- $plan := (required "plan is required." .plan) }}
 apiVersion: ibmcloud.ibm.com/v1alpha1
 kind: Service
 metadata:
-  name: {{ .Values.service.name }}
-  namespace: {{ required "a valid namespace is required!" .Values.service.namespace }}
-{{ if eq .Values.service.plan "Alias" }}
+  name: {{ $name }} {{- if eq $plan "Alias" -}} -alias {{- end }}
+  {{- if .namespace }}
+  namespace: {{ .namespace }}
+  {{- end }}
+  {{- if eq $plan "Alias" }}
   annotations:
-    ibmcloud.ibm.com/instanceId: {{ required "A valid instanceId is required when service.plan is set to Alias" .Values.service.instanceId | quote }}
-{{ end }}
+    ibmcloud.ibm.com/instanceId: {{ required "instanceId is required for plan type \"Alias\"." .instanceId }}
+  {{- end }}
 spec:
-  plan: {{ required "A valid service plan is required." .Values.service.plan }}
-  serviceClass: {{ .Values.service.serviceClass }}
+  plan: {{ $plan }}
+  serviceClass: {{ $serviceClass }}
+  externalName:  {{ $name }}
   context:
-    region: {{ .Values.service.context.region }}
-    resourcegroup: {{ .Values.service.context.resourceGroup }}
-  externalName:  {{ .Values.service.externalName }}
-{{ if .Values.parameters }}
-  parameters:
-    {{- range $key, $val := .Values.service.parameters }}
-    {{ $key }}: {{ $val }}
-    {{- end }}
-{{ end }}
+    region: {{ default "us-south" .region }}
+    {{- if .resourceGroup }}
+    resourceGroup: {{ .resourceGroup }}
+    {{- end -}}
+  {{ include ( printf "ico.%s.spec" $serviceClass ) . | indent 4 }}
 ---
+{{- else }}
+{{- end }}
 apiVersion: ibmcloud.ibm.com/v1alpha1
 kind: Binding
 metadata:
-  name: binding-{{ .Values.service.name }}
-  namespace: {{ .Values.service.namespace }}
-{{ if eq .Values.binding.alias true }}
+  name: {{ $name }}
+  {{- if .namespace }}
+  namespace: {{ .namespace }}
+  {{- end }}
+  {{- if .bindingAlias }}
   annotations:
-    ibmcloud.ibm.com/keyId: {{ required "A valid keyId is required when binding.alias is set to true" .Values.binding.keyId | quote }}
-{{ end }}
+    ibmcloud.ibm.com/keyId: {{ required "keyId is required for bindingAlias." .keyId | quote }}
+  {{- end }}
 spec:
-  serviceName: {{ .Values.service.name }}
-  role: Manager
-  serviceNamespace: {{ .Values.service.namespace }}
+  serviceName: {{ .name }} {{- if .bindingAlias -}} -alias {{- end }}
+  role: {{ default "Manager" .role }}
+  {{- if .namespace }}
+  serviceNamespace: {{ .namespace }}
+  {{- end }}
+  {{- if .bindingAlias }}
+  alias: {{ .bindingAlias }}
+  {{- end }}
+{{- end }}
