@@ -2,10 +2,11 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-services:
+ibmCloudServices:
   -
-    name: "cloudant-helm-roder"
+    name: "netperf-cloudant-demo"
     serviceClass: "cloudantnosqldb"
+    namespace: roder-app
     # the plan to use for the service.  For creating a service that maps to an existing service use "Alias" and also specify an instanceId.
     plan: "standard"
     tags:

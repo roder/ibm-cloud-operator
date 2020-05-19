@@ -6,7 +6,7 @@ parameters:
   {{fail "service_endpoints must be set to 'private'."}}
   {{- else if eq $key "key_protect_key" }}
   - name: {{ $key }}
-    value: {{ $val | quote }}
+    value: {{ $val | quote  }}
   {{- else }}
   - name: {{ $key }}
     value: {{ $val }}
